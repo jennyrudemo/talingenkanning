@@ -7,7 +7,7 @@
 %https://zenodo.org/record/1074387#.X2EHFD9xdEY
 %http://www.rroij.com/open-access/isolated-speech-recognitionusing-mfcc-and-dtw.pdf
 %https://www.irjet.net/archives/V5/i2/IRJET-V5I2408.pdf
-
+% Hej
 %Vi utnyttjar att det finns inbyggda funktioner i Matlab för att beräkna MFCC och DTW. 
 %-------------------------------------------------------------------------------
 
