@@ -18,17 +18,11 @@ clear all
 %inte är lång tystnad före och efter orden.  
 
 %Det här ordet skall testas:
-[test,fs] = audioread('vinter15.wav'); 
+[test,fs] = audioread('ljud/vinter15.wav'); 
 
 %De här orden jämför vi med (bör helst vara flera av varje ord med olika talare): 
 [referensord1,fs] = audioread('ljud/vinter1.wav');
-[referensord2,fs] = audioread('upp2.wav');
-[referensord3,fs] = audioread('ner1.wav');
-[referensord4,fs] = audioread('ner2.wav');
-[referensord5,fs] = audioread('hoger1.wav');
-[referensord6,fs] = audioread('hoger2.wav');
-[referensord7,fs] = audioread('vanster1.wav');
-[referensord8,fs] = audioread('vanster2.wav');
+[referensord2,fs] = audioread('ljud/vinter2.wav');
 
 %Ordlista med referensorden för att kunna skriva ut ordet som matchar bäst:
 ord = ["upp" , "upp" , "ner" , "ner" , "höger" , "höger" , "vänster" , "vänster"];
@@ -46,37 +40,37 @@ ref1firstcoeffs = transpose(ref1coeffs(:,1:coeffs));
 ref2coeffs = mfcc(referensord2,fs);
 ref2firstcoeffs = transpose(ref2coeffs(:,1:coeffs));
 
-ref3coeffs = mfcc(referensord3,fs);
-ref3firstcoeffs = transpose(ref3coeffs(:,1:coeffs));
-
-ref4coeffs = mfcc(referensord4,fs);
-ref4firstcoeffs = transpose(ref4coeffs(:,1:coeffs));
-
-ref5coeffs = mfcc(referensord5,fs);
-ref5firstcoeffs = transpose(ref5coeffs(:,1:coeffs));
-
-ref6coeffs = mfcc(referensord6,fs);
-ref6firstcoeffs = transpose(ref6coeffs(:,1:coeffs));
-
-ref7coeffs = mfcc(referensord7,fs);
-ref7firstcoeffs = transpose(ref7coeffs(:,1:coeffs));
-
-ref8coeffs = mfcc(referensord8,fs);
-ref8firstcoeffs = transpose(ref8coeffs(:,1:coeffs));
-
-
+% ref3coeffs = mfcc(referensord3,fs);
+% ref3firstcoeffs = transpose(ref3coeffs(:,1:coeffs));
+% 
+% ref4coeffs = mfcc(referensord4,fs);
+% ref4firstcoeffs = transpose(ref4coeffs(:,1:coeffs));
+% 
+% ref5coeffs = mfcc(referensord5,fs);
+% ref5firstcoeffs = transpose(ref5coeffs(:,1:coeffs));
+% 
+% ref6coeffs = mfcc(referensord6,fs);
+% ref6firstcoeffs = transpose(ref6coeffs(:,1:coeffs));
+% 
+% ref7coeffs = mfcc(referensord7,fs);
+% ref7firstcoeffs = transpose(ref7coeffs(:,1:coeffs));
+% 
+% ref8coeffs = mfcc(referensord8,fs);
+% ref8firstcoeffs = transpose(ref8coeffs(:,1:coeffs));
+% 
+% 
 %beräkna avstånden mellan testord och de olika jämförelseorden med hjälp av Dynamic Time Warping
 dist_ref1 = dtw(testfirstcoeffs,ref1firstcoeffs);
 dist_ref2 = dtw(testfirstcoeffs,ref2firstcoeffs);
-dist_ref3 = dtw(testfirstcoeffs,ref3firstcoeffs);
-dist_ref4 = dtw(testfirstcoeffs,ref4firstcoeffs);
-dist_ref5 = dtw(testfirstcoeffs,ref5firstcoeffs);
-dist_ref6 = dtw(testfirstcoeffs,ref6firstcoeffs);
-dist_ref7 = dtw(testfirstcoeffs,ref7firstcoeffs);
-dist_ref8 = dtw(testfirstcoeffs,ref8firstcoeffs);
+% dist_ref3 = dtw(testfirstcoeffs,ref3firstcoeffs);
+% dist_ref4 = dtw(testfirstcoeffs,ref4firstcoeffs);
+% dist_ref5 = dtw(testfirstcoeffs,ref5firstcoeffs);
+% dist_ref6 = dtw(testfirstcoeffs,ref6firstcoeffs);
+% dist_ref7 = dtw(testfirstcoeffs,ref7firstcoeffs);
+% dist_ref8 = dtw(testfirstcoeffs,ref8firstcoeffs);
 
 %ordet med minsta avståndet skrivs ut: 
-distansvektor = [dist_ref1 dist_ref2 dist_ref3 dist_ref4 dist_ref5 dist_ref6 dist_ref7 dist_ref8];
+distansvektor = [dist_ref1 dist_ref2];
 [distans,ordnummer] = min([distansvektor]);
 
 ord(ordnummer)
