@@ -7,7 +7,7 @@
 %https://zenodo.org/record/1074387#.X2EHFD9xdEY
 %http://www.rroij.com/open-access/isolated-speech-recognitionusing-mfcc-and-dtw.pdf
 %https://www.irjet.net/archives/V5/i2/IRJET-V5I2408.pdf
-% Hej
+%
 %Vi utnyttjar att det finns inbyggda funktioner i Matlab för att beräkna MFCC och DTW. 
 %-------------------------------------------------------------------------------
 
@@ -18,48 +18,75 @@ clear all
 %inte är lång tystnad före och efter orden.  
 
 %Det här ordet skall testas:
-[test,fs] = audioread('ljud/vinter15.wav'); 
+[test,fs] = audioread('ljud/sommar15.wav'); 
 
 %Ordlista med referensorden för att kunna skriva ut ordet som matchar bäst:
 ord = ["vinter" , "sommar"];
 
 coeffs = 4; % 1-14. Antalet MFCC-koefficienter som används. Här kan det kanske löna sig att experimentera lite med hur många som tas med.
 
-antalord=length(ord);
+antalord=length(ord); %antal ord i ordlistan
+dataord = 14; %antal av respektive ord i ordlistan
 
 %Beräkna MFCC för testordet:
 testcoeffs = mfcc(test,fs);
 testfirstcoeffs = transpose(testcoeffs(:,1:coeffs));
 
-referens=zeros(4,150,15*antalord);
-distans=zeros(1,antalord);
+distanslista=zeros(1,dataord); %lista för avstånd mellan testord och referensord
+medeldistans=zeros(1,antalord); %lista för medelavstånd mellan testord och respektive ord i ordlistan
 
 
-%Loopar igenom varje ord
+%Loopar igenom varje ord i ordlistan
 for i=1:2
  
     %Loopar igenom varje version av ordet
-    for j=1:15
+    for j=1:dataord
         
         %Läsa i referensord
-        filename='ljud/'+ord(i)+j+'.wav';
-        [referensord,fs]=audioread(filename);
+        filnamn='ljud/'+ord(i)+j+'.wav';
+        [referensord,fs]=audioread(filnamn);
         
         %Beräkna MFCC för referensorden
         refcoeffs = mfcc(referensord,fs);
         reffirstcoeffs = transpose(refcoeffs(:,1:coeffs));
         
-        %Lagra reffirstcoeffs i lista med koefficienter
-        referens(:,1:length(reffirstcoeffs), j) = reffirstcoeffs;
+        %Beräkna avstånde mellan testordets och referensordets
+        %MFCC-koeficcienter
+        distans=dtw(testfirstcoeffs, reffirstcoeffs);
+        
+        %Lagra avståndet i lista med avstånd
+        distanslista(j)=distans;
+        
     end
     
-    medelreferens=mean(referens,3);
-    distans(i)=dtw(testfirstcoeffs, medelreferens);
+    %Beräkna medelavståndet till testordet, för varje ord i ordlistan
+    medeldistans(i)=mean(distanslista);
+    
 end
 
-[dist,ordnummer] = min(distans);
+%Ta fram minsta avståndet och koppla till ord i ordlistan
+[dist,ordnummer] = min(medeldistans);
+rattord=ord(ordnummer);
 
-ord(ordnummer)
+%Slumpa siffra
+nr=randi([1 15],1,1);
+
+%Hitta motsatsord
+if mod(ordnummer,2)==0
+    motsatsord=ord(ordnummer-1);
+else
+    motsatsord=ord(ordnummer+1);
+end
+
+filnamn='ljud/'+motsatsord+nr+'.wav';
+[sound, fs] = audioread(filnamn);
+soundsc(sound,fs);
+
+    
+
+%Skriva ut/spela upp motsats (slumpmässigt vilken inspelning)
+
+
 
 %Egentligen borde det vara betydlig fler exempel av varje referensord så det blir
 %mer träffsäkert (kanske med någon form av medelvärde som beräknas till alla ord som är samma?).
