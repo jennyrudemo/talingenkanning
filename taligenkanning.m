@@ -18,7 +18,21 @@ clear all
 %inte är lång tystnad före och efter orden.  
 
 %Det här ordet skall testas:
-[test,fs] = audioread('ljud/nej15.wav'); 
+%[test,fs1] = audioread('ljud/nej15.wav'); 
+
+%Spela in ljud live
+
+%Skapa audiorecorder
+fs1=44100; %sampelfrekvens för audiorecorder
+recorder=audiorecorder(fs1,8,1);
+
+disp('Börja prata.')
+recordblocking(recorder,2);
+disp('Sluta prata.')
+
+play(recorder)
+
+test=getaudiodata(recorder);
 
 %Ordlista med referensorden för att kunna skriva ut ordet som matchar bäst:
 ord = ["vinter" , "sommar", "sol", "mane", "ja", "nej"];
@@ -29,7 +43,7 @@ antalord=length(ord); %antal ord i ordlistan
 dataord = 14; %antal av respektive ord i ordlistan
 
 %Beräkna MFCC för testordet:
-testcoeffs = mfcc(test,fs);
+testcoeffs = mfcc(test,fs1);
 testfirstcoeffs = transpose(testcoeffs(:,1:coeffs));
 
 distanslista=zeros(1,dataord); %lista för avstånd mellan testord och referensord
