@@ -18,10 +18,10 @@ clear all
 %inte är lång tystnad före och efter orden.  
 
 %Det här ordet skall testas:
-[test,fs] = audioread('ljud/sommar15.wav'); 
+[test,fs] = audioread('ljud/nej15.wav'); 
 
 %Ordlista med referensorden för att kunna skriva ut ordet som matchar bäst:
-ord = ["vinter" , "sommar"];
+ord = ["vinter" , "sommar", "sol", "mane", "ja", "nej"];
 
 coeffs = 4; % 1-14. Antalet MFCC-koefficienter som används. Här kan det kanske löna sig att experimentera lite med hur många som tas med.
 
@@ -37,7 +37,7 @@ medeldistans=zeros(1,antalord); %lista för medelavstånd mellan testord och respe
 
 
 %Loopar igenom varje ord i ordlistan
-for i=1:2
+for i=1:antalord
  
     %Loopar igenom varje version av ordet
     for j=1:dataord
