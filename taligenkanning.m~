@@ -54,7 +54,6 @@ dataord = 14; %antal av respektive ord i ordlistan
 [testord,fs]=audioread('test.wav');
 
 %Ta bort ev nollor och oändliga värden i testljudfilen
-%På detta sätt försvinner tysta partier i början och slutet av ljudfilen
 nonZeroValues = testord(testord~=0 & isfinite(testord));
 
 %Beräkna MFCC för testordet:
@@ -75,7 +74,7 @@ for i=1:antalord
         filnamn='ljud/'+ord(i)+j+'.wav';
         [referensord,fs]=audioread(filnamn);
         
-        %Ta bort ev nollor och oändliga värden i ljudfilen
+        %Ta bort ev nollor och oändliga värden i ljudfilen (tysta delar)
         referensord=referensord(referensord~=0 & isfinite(referensord));
         
         %Beräkna MFCC för referensorden
@@ -96,6 +95,8 @@ for i=1:antalord
     
 end
 
+medeldistans
+
 %Ta fram minsta avståndet och koppla till ord i ordlistan
 [dist,ordnummer] = min(medeldistans);
 rattord=ord(ordnummer);
@@ -110,10 +111,14 @@ else
     motsatsord=ord(ordnummer+1);
 end
 
-%Spela upp slumpmässigt vald inspelning av motsatsordet
 filnamn='ljud/'+motsatsord+nr+'.wav';
 [sound, fs] = audioread(filnamn);
 soundsc(sound,fs);
+
+    
+
+%Skriva ut/spela upp motsats (slumpmässigt vilken inspelning)
+
 
 
 %Egentligen borde det vara betydlig fler exempel av varje referensord så det blir
