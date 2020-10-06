@@ -1,89 +1,75 @@
 
-% Minimal kod för att demonstrera principen för hur MFCC och Dynamic Time
-% Warping kan användas för taligenkänning. Borde snyggas till med mer
-% funktionsanrop och loopar, särksilt om fler ord skall in.
-
-%Metoden finns beskriven här:
+%Program för talingenkänning med hjälp av MFCC och Dynamic Time Warping
+%Metoden som används beskrivs här:
 %https://zenodo.org/record/1074387#.X2EHFD9xdEY
 %http://www.rroij.com/open-access/isolated-speech-recognitionusing-mfcc-and-dtw.pdf
 %https://www.irjet.net/archives/V5/i2/IRJET-V5I2408.pdf
 %
-%Vi utnyttjar att det finns inbyggda funktioner i Matlab för att beräkna MFCC och DTW. 
+%Matlabs inbyggda funktioner för MFCC och DTW utnyttjas.
 %-------------------------------------------------------------------------------
 
 clear all
 
-%Läs in ordet som skall testas. I denna enkla demovariant för att visa principen behöver ordet spelas
-%in i annat program och sparas som wav-filer (exempelvis i Audacity), är gissningsvis bäst att de är i mono väl det vid inspelningen). Filerna bör trimmas så att det
-%inte är lång tystnad före och efter orden.  
+%Läs in ordet som ska testas.
+%För detta finns två alternativ: läsa in en förinspelad wav-fil eller läsa 
+%in ett ord i realtid, medan programmet körs.
 
-%Igenkänning av förinspelat ord
+%Inläsning av förinspelat ord
+%     [testord,fs] = audioread('ljud/tjej3.wav'); %spara ljudet i variabeln test
+%     soundsc(testord,fs);
 
-%Det här ordet skall testas:
-% [test,fs1] = audioread('ljud/kille4.wav'); 
-% soundsc(test,fs1);
-
-
-%Igenkänning av ord inspelat i realtid
-
+%Inläsning av ord i realtid
 %Skapa audiorecorder
-fs1=44100; %sampelfrekvens för audiorecorder
-recorder=audiorecorder(fs1,16,1); %liveigenkänning funkar bättre med 16 bitar
-%recorder=audiorecorder(fs1,8,1);
+    fs = 44100; %sampelfrekvens för audiorecorder
+    recorder = audiorecorder(fs,16,1); %8 eller 16 bitar, liveigenkänning tycks fungera bättre med 16 bitar
+    
+    disp('Börja prata.')
+    recordblocking(recorder,2);
+    disp('Sluta prata.')
+    
+    play(recorder);
+    
+    testord = getaudiodata(recorder); %spara ljudet i variabeln test
 
-disp('Börja prata.')
-recordblocking(recorder,2);
-disp('Sluta prata.')
-
-play(recorder);
-
-test=getaudiodata(recorder);
-
-filename='test.wav';
-audiowrite(filename, test, fs1);
-
-%Ordlista med referensorden för att kunna skriva ut ordet som matchar bäst:
+%Lista med referensord för att identifiera rätt ord och hitta motsatsord
 ord = ["ja", "nej", "vinter" , "sommar", "sol", "mane", "varmt", "kallt", "motsatsord", "synonym"];
+antalOrd = length(ord); %antal ord i ordlistan
+refMangd = 14; %antal inspelningar av respektive referens som används som träningsdata
 
-coeffs = 14; % 1-14. Antalet MFCC-koefficienter som används. Här kan det kanske löna sig att experimentera lite med hur många som tas med.
-
-antalord=length(ord); %antal ord i ordlistan
-dataord = 14; %antal av respektive ord i ordlistan
-
-%Läs in testord från ljudfil
-[testord,fs]=audioread('test.wav');
+koeff = 14; % 1-14. Antalet MFCC-koefficienter som används.
 
 %Ta bort ev nollor och oändliga värden i testljudfilen
-nonZeroValues = testord(testord~=0 & isfinite(testord));
+%På detta sätt försvinner tysta partier i början och slutet av ljudfilen
+%En nackdel är att även tysta partier inuti ordet försvinner
+testord = testord(testord~=0 & isfinite(testord));
 
-%Beräkna MFCC för testordet:
-testcoeffs = mfcc(nonZeroValues,fs);
-testfirstcoeffs = transpose(testcoeffs(:,1:coeffs));
+%Beräkna MFCC för testordet
+testkoeffs = mfcc(testord,fs);
+testValdaKoeffs = transpose(testkoeffs(:,1:koeff)); %Önskat antal koefficienter väljs ut
 
-distanslista=zeros(1,dataord); %lista för avstånd mellan testord och referensord
-medeldistans=zeros(1,antalord); %lista för medelavstånd mellan testord och respektive ord i ordlistan
-
+distanslista=zeros(1,refMangd); %lagrar avstånd mellan testordet och respektive inspelning av ett referensord
+medeldistans=zeros(1,antalOrd); %lagrar medelavståndet till testordet för varje referensord 
 
 %Loopar igenom varje ord i ordlistan
-for i=1:antalord
+for i=1:antalOrd
  
-    %Loopar igenom varje version av ordet
-    for j=1:dataord
+    %Loopar igenom varje inspelning av ordet
+    for j=1:refMangd
         
-        %Läsa i referensord
+        %Läs i referensord
         filnamn='ljud/'+ord(i)+j+'.wav';
         [referensord,fs]=audioread(filnamn);
         
-        %Ta bort ev nollor och oändliga värden i ljudfilen (tysta delar)
+        %Ta bort ev nollor och oändliga värden i ljudfilen
         referensord=referensord(referensord~=0 & isfinite(referensord));
         
         %Beräkna MFCC för referensorden
         refcoeffs = mfcc(referensord,fs);
-        reffirstcoeffs = transpose(refcoeffs(:,1:coeffs));
+        reffirstcoeffs = transpose(refcoeffs(:,1:koeff));
         
         %Beräkna avstånde mellan testordets och referensordets
         %MFCC-koeficcienter
-        distans=dtw(testfirstcoeffs, reffirstcoeffs);
+        distans=dtw(testValdaKoeffs, reffirstcoeffs);
         
         %Lagra avståndet i lista med avstånd
         distanslista(j)=distans;
@@ -94,8 +80,6 @@ for i=1:antalord
     medeldistans(i)=mean(distanslista);
     
 end
-
-medeldistans
 
 %Ta fram minsta avståndet och koppla till ord i ordlistan
 [dist,ordnummer] = min(medeldistans);
@@ -111,14 +95,10 @@ else
     motsatsord=ord(ordnummer+1);
 end
 
+%Spela upp slumpmässigt vald inspelning av motsatsordet
 filnamn='ljud/'+motsatsord+nr+'.wav';
 [sound, fs] = audioread(filnamn);
 soundsc(sound,fs);
-
-    
-
-%Skriva ut/spela upp motsats (slumpmässigt vilken inspelning)
-
 
 
 %Egentligen borde det vara betydlig fler exempel av varje referensord så det blir
